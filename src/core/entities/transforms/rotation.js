@@ -1,16 +1,14 @@
 export default class RotationManager {
-  constructor(world, maxTurnRate = Math.PI / 60) {
+  constructor(world) {
     this.world = world;
-    this.maxTurnRate = maxTurnRate;
   }
 
   update(dTime) {
     Object.values(this.world.entities).forEach((list) => {
       list.forEach((entity) => {
-        if (entity.isAiming) {
-          // snap to mouse if character is aiming;
-          entity.vector.angle = entity.targetAngle;
-        } else if (entity.targetAngle !== undefined) {
+        if (entity.targetAngle !== undefined) {
+          const maxTurnRadius = entity.maxTurnRadius || 0;
+
           let current = entity.vector.angle;
           let delta = entity.targetAngle - current;
 
@@ -19,8 +17,8 @@ export default class RotationManager {
 
           // clamp rotation
           const turn = Math.max(
-            -this.maxTurnRate * dTime,
-            Math.min(this.maxTurnRate * dTime, delta)
+            -maxTurnRadius * dTime,
+            Math.min(maxTurnRadius * dTime, delta)
           );
           entity.vector.angle = current + turn;
         }

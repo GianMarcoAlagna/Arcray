@@ -4,10 +4,12 @@ const worldManager = new World();
 //***********************************
 
 function setup() {
-  createCanvas(400, 400);
+  const cnv = createCanvas(400, 400);
+  worldManager.canvas = cnv.elt; // save DOM element for InputManager
   const w = 400;
   const h = 400;
 
+  // TODO: Allow passing of both baseTurnRadius and aimingTurnRadius
   // create local player
   const player = worldManager.createPlayer(
     { x: w / 2, y: h / 2 },

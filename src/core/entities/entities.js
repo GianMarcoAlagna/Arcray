@@ -1,5 +1,4 @@
 export default class EntityManager {
-  // entities = {asteroids: [], lasers: [], enemies: [], players: []}
   constructor(world, entities) {
     this.world = world;
     this.entities = entities || { lasers: [], enemies: [], players: [] };
@@ -41,13 +40,18 @@ export default class EntityManager {
 export class Entity {
   // drawData could be extended into mesh/texture data;
   // maybe have a seperate manager for those;
-  constructor({ x, y, drawData, world, drawFunction = () => {} }) {
+  constructor({ x, y, drawData, world }) {
     this.vector = { x, y, angle: 0 };
     this.world = world;
-    this.drawFunction = drawFunction;
+    this.drawFunction = () => {};
+
     this.targetAngle = 0;
     this.size = 1;
+
     this.isAiming = false;
+    this.movementKeysTurnRadius = Math.PI / 45;
+    this.baseTurnRadius = Math.PI / 45;
+    this.maxTurnRadius = Math.PI / 45;
   }
 
   // need to move render out somewhere else to make it more globally managed
@@ -61,22 +65,5 @@ export class Entity {
 
   getY() {
     return this.vector.y;
-  }
-
-  getAngle() {
-    // returns angle in radians
-    return this.vector.angle;
-  }
-
-  setPos({ x, y }) {
-    this.vector.x = x;
-    this.vector.y = y;
-    return this.pos;
-  }
-
-  // instant rotation
-  setAngle(angle) {
-    this.vector.angle = angle;
-    return this.vector.angle;
   }
 }

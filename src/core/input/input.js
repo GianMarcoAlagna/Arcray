@@ -1,8 +1,7 @@
 export default class InputManager {
   constructor(world) {
     this.world = world;
-    // this.player     = world.localPlayer;
-    // console.log(world)
+    // this.player  = world.localPlayer;
 
     this.isFrozen = false;
     this.mouse = { x: 0, y: 0 };
@@ -17,6 +16,7 @@ export default class InputManager {
       ShiftLeft: "sprint/boost",
     };
 
+    // TODO: implement ability to define if movement keys affect orientation or not
     window.addEventListener("keydown", (e) => this.onKeyDown(e));
     window.addEventListener("keyup", (e) => this.onKeyUp(e));
     window.addEventListener("mousemove", (e) => this.onMouseMove(e));
@@ -34,10 +34,11 @@ export default class InputManager {
   }
 
   onMouseMove(e) {
-    // record mouse relative to canvas center
-    const rect = e.target.getBoundingClientRect();
-    this.mouse.x = e.clientX - rect.left - rect.width / 2;
-    this.mouse.y = e.clientY - rect.top - rect.height / 2;
+    const rect = (this.world.canvas || e.target).getBoundingClientRect();
+
+    // use top-left coordinate system
+    this.mouse.x = e.clientX - rect.left;
+    this.mouse.y = e.clientY - rect.top;
   }
 
   onMouseDown(e) {
@@ -69,12 +70,18 @@ export default class InputManager {
     }
 
     if (player.isAiming) {
-      // Rotate toward mouse only
-      // player.targetAngle = Math.atan2(this.mouse.y - player.vector.y, this.mouse.x - player.vector.x);
-      player.targetAngle = Math.atan2(this.mouse.y, this.mouse.x);
-      player.speed = 0; // no auto-move unless WASD also pressed
+      // Set a more snappy turn radius for aiming
+      player.maxTurnRadius = Math.PI / 10;
+      const dy = this.mouse.y - player.vector.y;
+      const dx = this.mouse.x - player.vector.x;
+
+      player.targetAngle = Math.atan2(dy, dx);
+      player.speed = 0;
     } else {
-      // WASD keys → assign targetAngle + speed
+      // Ensure correct turn radius if not aiming
+      player.maxTurnRadius = player.baseTurnRadius;
+
+      // WASD keys -> assign targetAngle + speed
       if (this.keysDown.has("KeyW")) {
         player.targetAngle = -Math.PI / 2;
         player.speed = 2;
@@ -88,6 +95,8 @@ export default class InputManager {
         player.targetAngle = 0;
         player.speed = 2;
       } else {
+        player.targetAngle = player.vector.angle; // <-- Ensures that "leftover" angle after-
+        // player releases a movement key, is cleaned up
         player.speed = 0;
       }
     }
